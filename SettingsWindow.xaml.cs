@@ -39,7 +39,8 @@ namespace NetSpeedWidget
         private enum SettingsPage
         {
             NetSpeed,
-            SystemStatus
+            SystemStatus,
+            Update
         }
 
         public SettingsWindow(
@@ -640,11 +641,14 @@ namespace NetSpeedWidget
 
         private void SystemStatusNavigationButton_Click(object sender, RoutedEventArgs e) => ShowSettingsPage(SettingsPage.SystemStatus);
 
+        private void UpdateNavigationButton_Click(object sender, RoutedEventArgs e) => ShowSettingsPage(SettingsPage.Update);
+
         private void ShowSettingsPage(SettingsPage page)
         {
             _currentSettingsPage = page;
             NetSpeedSettingsPanel.Visibility = page == SettingsPage.NetSpeed ? Visibility.Visible : Visibility.Collapsed;
             SystemStatusSettingsPanel.Visibility = page == SettingsPage.SystemStatus ? Visibility.Visible : Visibility.Collapsed;
+            UpdateSettingsPanel.Visibility = page == SettingsPage.Update ? Visibility.Visible : Visibility.Collapsed;
             ApplyNavigationSelection(page);
         }
 
@@ -666,6 +670,10 @@ namespace NetSpeedWidget
 
             var netSpeedSelected = page == SettingsPage.NetSpeed;
             var systemStatusSelected = page == SettingsPage.SystemStatus;
+            var updateSelected = page == SettingsPage.Update;
+            UpdateNavigationButton.Background = updateSelected ? selectedBackgroundBrush : transparentBrush;
+            UpdateNavigationSelectionBar.Background = updateSelected ? accentBrush : transparentBrush;
+            UpdateNavigationText.FontWeight = updateSelected ? FontWeights.SemiBold : FontWeights.Normal;
 
             NetSpeedNavigationButton.Background =
                 netSpeedSelected ? selectedBackgroundBrush : transparentBrush;
@@ -721,6 +729,9 @@ namespace NetSpeedWidget
             ApplyTitleBarTheme(theme);
             TitleText.Foreground = foregroundBrush;
             TitleBarText.Foreground = foregroundBrush;
+            UpdatePageTitle.Foreground = foregroundBrush;
+            UpdateNavigationText.Foreground = foregroundBrush;
+            UpdateNavigationIcon.Foreground = foregroundBrush;
             UpdateCurrentVersionText.Foreground = foregroundBrush;
             UpdateStateText.Foreground = foregroundBrush;
             NetSpeedNavigationText.Foreground = foregroundBrush;

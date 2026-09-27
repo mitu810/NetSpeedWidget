@@ -83,9 +83,7 @@
                 Grid.Column="0"
                 Padding="8,14,8,0"
                 Background="#202020">
-                <Grid>
-                    <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                    <StackPanel Spacing="2">
+                <StackPanel Spacing="2">
                     <Button
                         x:Name="NetSpeedNavigationButton"
                         Style="{StaticResource SettingsNavigationButtonStyle}"
@@ -157,16 +155,22 @@
                                 Style="{StaticResource SettingsNavigationTextStyle}"/>
                         </Grid>
                     </Button>
-                    </StackPanel>
-                    <StackPanel Grid.Row="1" Spacing="8" Margin="0,16,0,16">
-                        <TextBlock x:Name="UpdateCurrentVersionText" FontSize="12" TextWrapping="Wrap"/>
-                        <Grid ColumnSpacing="6">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                            <Button x:Name="CheckUpdateButton" Content="检查更新" FontSize="12" Padding="8,6" Click="CheckUpdateButton_Click"/>
-                            <TextBlock x:Name="UpdateStateText" Grid.Column="1" FontSize="11" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    <Button x:Name="UpdateNavigationButton"
+                        Style="{StaticResource SettingsNavigationButtonStyle}"
+                        AutomationProperties.Name="软件更新" Click="UpdateNavigationButton_Click">
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="8"/><ColumnDefinition Width="24"/><ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="UpdateNavigationSelectionBar" Width="3" Height="18" CornerRadius="2"
+                                Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <SymbolIcon x:Name="UpdateNavigationIcon" Grid.Column="1" Symbol="Download"
+                                Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="UpdateNavigationText" Grid.Column="2" Text="软件更新"
+                                Style="{StaticResource SettingsNavigationTextStyle}"/>
                         </Grid>
-                    </StackPanel>
-                </Grid>
+                    </Button>
+                </StackPanel>
             </Border>
 
             <Grid
@@ -759,6 +763,18 @@
                                 </Grid>
                             </Border>
                         </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+                <ScrollViewer x:Name="UpdateSettingsPanel" Visibility="Collapsed"
+                    VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Padding="20" Spacing="14">
+                        <TextBlock x:Name="UpdatePageTitle" Text="软件更新" FontSize="24" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="UpdateCurrentVersionText" FontSize="14" TextWrapping="Wrap"/>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <Button x:Name="CheckUpdateButton" Content="检查更新" Click="CheckUpdateButton_Click"/>
+                            <TextBlock x:Name="UpdateStateText" Grid.Column="1" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                        </Grid>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>

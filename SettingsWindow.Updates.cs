@@ -248,6 +248,7 @@ public sealed partial class SettingsWindow
     /// <summary>隔离验证版本入口、无更新结果或新版本弹窗，不执行下载安装。</summary>
     public void ShowUpdateVerificationPage()
     {
+        ShowSettingsPage(SettingsPage.Update);
         _updateVerificationOnly = true;
         _verifyPopupDownload = Array.IndexOf(Environment.GetCommandLineArgs(), "--verify-download-popup") >= 0;
         if (Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-update-current") >= 0)
@@ -267,7 +268,7 @@ public sealed partial class SettingsWindow
                 return;
             }
             var release = new UpdateRelease(new Version(2, 2, 0), "v2.2.0",
-                "## 新增功能\n- 下载和安装都在同一弹窗操作。\n\n## 优化改进\n- 复用下载缓存。\n\n## 问题修复\n- 移除独立更新页面。\n\n## 更新说明\n- 保留用户配置。",
+                "## 新增功能\n- 下载和安装都在同一弹窗操作。\n\n## 优化改进\n- 复用下载缓存。\n\n## 问题修复\n- 恢复独立更新页面，更新内容只在弹窗显示。\n\n## 更新说明\n- 保留用户配置。",
                 DateTimeOffset.Now, new Uri("https://github.com/" + UpdateService.Repository), "verification-only", 10485760, "", false);
             await ShowUpdatePopupAsync(release, null);
         }
@@ -285,6 +286,7 @@ public sealed partial class SettingsWindow
 
     public object GetUpdateSizingVerification() => new
     {
+        updatePageVisible = UpdateSettingsPanel.Visibility == Visibility.Visible, panelWidth = UpdateSettingsPanel.ActualWidth,
         buttonWidth = CheckUpdateButton.ActualWidth, statusWidth = UpdateStateText.ActualWidth,
         versionWidth = UpdateCurrentVersionText.ActualWidth, currentVersion = UpdateCurrentVersionText.Text,
         status = UpdateStateText.Text, popupOpen = _updatePopupOpen,

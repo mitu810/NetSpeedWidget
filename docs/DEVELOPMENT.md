@@ -52,3 +52,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish.ps1
 去掉软件更新页面和导航：版本/检查按钮常驻设置左下角，检查结果显示在按钮旁。SettingsWindow.Updates.cs 用 ContentDialog 的 PrimaryButtonClick 在原弹窗内完成下载、展示进度并切换为安装按钮；事件同步设置 Cancel=true 防止按钮关闭弹窗，异步请求可取消。--smoke-update 验证新版本弹窗；--smoke-update-current 在隔离实例调用真实检查按钮，验证没有新版本且不弹窗。
 
 `--smoke-update --verify-download-popup` 以隔离实例、默认配置打开真实 Release 的弹窗，通过控件自动化触发真实下载，最多等待 75 秒并记录进度和主按钮状态。这个模式只验证下载及按钮切换，安装分支被阻止；下载在本次实际 EXE 目录的 cache 下，Release ZIP 使用白名单，不收录缓存。
+
+### v2.1.2 软件更新页面
+
+恢复第三项软件更新导航；版本、检查按钮与结果移入 UpdateSettingsPanel。页面没有更新内容或进度控件，SettingsWindow.Updates.cs 的弹窗流程不变。隔离验证先进入更新页面，记录 updatePageVisible、panelWidth 及按钮尺寸，分别检查无更新结果与新版本弹窗。
