@@ -39,8 +39,7 @@ namespace NetSpeedWidget
         private enum SettingsPage
         {
             NetSpeed,
-            SystemStatus,
-            Update
+            SystemStatus
         }
 
         public SettingsWindow(
@@ -646,7 +645,6 @@ namespace NetSpeedWidget
             _currentSettingsPage = page;
             NetSpeedSettingsPanel.Visibility = page == SettingsPage.NetSpeed ? Visibility.Visible : Visibility.Collapsed;
             SystemStatusSettingsPanel.Visibility = page == SettingsPage.SystemStatus ? Visibility.Visible : Visibility.Collapsed;
-            UpdateSettingsPanel.Visibility = page == SettingsPage.Update ? Visibility.Visible : Visibility.Collapsed;
             ApplyNavigationSelection(page);
         }
 
@@ -666,9 +664,6 @@ namespace NetSpeedWidget
                         ? Windows.UI.Color.FromArgb(255, 0, 95, 184)
                         : Windows.UI.Color.FromArgb(255, 96, 205, 255));
 
-            UpdateNavigationButton.Background = page == SettingsPage.Update ? selectedBackgroundBrush : transparentBrush;
-            UpdateNavigationSelectionBar.Background = page == SettingsPage.Update ? accentBrush : transparentBrush;
-            UpdateNavigationText.FontWeight = page == SettingsPage.Update ? FontWeights.SemiBold : FontWeights.Normal;
             var netSpeedSelected = page == SettingsPage.NetSpeed;
             var systemStatusSelected = page == SettingsPage.SystemStatus;
 
@@ -726,7 +721,8 @@ namespace NetSpeedWidget
             ApplyTitleBarTheme(theme);
             TitleText.Foreground = foregroundBrush;
             TitleBarText.Foreground = foregroundBrush;
-            UpdateNavigationText.Foreground = foregroundBrush;
+            UpdateCurrentVersionText.Foreground = foregroundBrush;
+            UpdateStateText.Foreground = foregroundBrush;
             NetSpeedNavigationText.Foreground = foregroundBrush;
             SystemStatusNavigationText.Foreground = foregroundBrush;
             NetSpeedNavigationIcon.Foreground = foregroundBrush;

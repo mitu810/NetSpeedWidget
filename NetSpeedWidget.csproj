@@ -10,7 +10,7 @@
     <Platforms>x64</Platforms>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
-    <Version>2.1.0</Version>
+    <Version>2.1.1</Version>
     <DefaultItemExcludes>$(DefaultItemExcludes);.git\**;.github\**;.backups\**;artifacts\**;publish\**;NetSpeedWidget.Hardware\**;NetSpeedWidget.Updater\**;NetSpeedWidget.Tests\**;.vs\**;.superpowers\**;docs\**;scripts\**;installer\**</DefaultItemExcludes>
   </PropertyGroup>
 

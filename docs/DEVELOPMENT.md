@@ -46,3 +46,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish.ps1
 更新页代码在 SettingsWindow.Updates.cs；UpdateService 负责匿名 GitHub 检查和流式下载，UpdateLauncher 负责更新辅助程序就绪握手，NetSpeedWidget.Updater 负责等待原进程、安装向导或便携替换与重启；PortableUpdate 提供白名单解压和备份回滚。publish.ps1 同时嵌入硬件和更新辅助程序。规范、测试与未验收边界见 [UPDATES.md](UPDATES.md)。`--smoke-update` 使用独立实例和默认配置，仅展示更新页布局，五秒后写入 DPI 校验记录并退出。
 
 补充：发现更新统一通过 ContentDialog 弹窗提示；启动后台检查与手动检查复用同一弹窗。UpdateCache 按版本/发行类型管理实际 EXE 下的 cache/updates，下载与安装分开，缓存需重复校验后才能安装。便携安装进度由独立普通权限 WinForms 窗口显示，安装版使用 Inno 的实际安装进度。AppPaths 统一 EXE 目录数据位置，旧安装版配置只在目标不存在时复制迁移。
+
+### v2.1.1 更新交互
+
+去掉软件更新页面和导航：版本/检查按钮常驻设置左下角，检查结果显示在按钮旁。SettingsWindow.Updates.cs 用 ContentDialog 的 PrimaryButtonClick 在原弹窗内完成下载、展示进度并切换为安装按钮；事件同步设置 Cancel=true 防止按钮关闭弹窗，异步请求可取消。--smoke-update 验证新版本弹窗；--smoke-update-current 在隔离实例调用真实检查按钮，验证没有新版本且不弹窗。
+
+`--smoke-update --verify-download-popup` 以隔离实例、默认配置打开真实 Release 的弹窗，通过控件自动化触发真实下载，最多等待 75 秒并记录进度和主按钮状态。这个模式只验证下载及按钮切换，安装分支被阻止；下载在本次实际 EXE 目录的 cache 下，Release ZIP 使用白名单，不收录缓存。

@@ -6,8 +6,8 @@ Windows 桌面实时网速小组件，使用 WinUI 3 / .NET 8，支持悬浮窗�
 
 从 [最新 Release](https://github.com/mitu810/NetSpeedWidget/releases/latest) 下载：
 
-- **安装版**：`NetSpeedWidget-v2.1.0-win-x64-Setup.exe`，按向导安装后从开始菜单运行。
-- **便携版**：`NetSpeedWidget-v2.1.0-win-x64-Portable.zip`，解压到固定、可写的目录，双击 `NetSpeedWidget.exe`。
+- **安装版**：`NetSpeedWidget-v2.1.1-win-x64-Setup.exe`，按向导安装后从开始菜单运行。
+- **便携版**：`NetSpeedWidget-v2.1.1-win-x64-Portable.zip`，解压到固定、可写的目录，双击 `NetSpeedWidget.exe`。
 - **校验**：`SHA256SUMS.txt`，用于检查下载文件完整性。
 
 支持 Windows 10 2004（19041）及以上、Windows 11，当前提供 x64。用户无需安装 Visual Studio、.NET SDK 或 Windows App SDK；发行包包含运行依赖，首次启动会自动解压依赖。
@@ -19,7 +19,7 @@ Windows 桌面实时网速小组件，使用 WinUI 3 / .NET 8，支持悬浮窗�
 - 深浅主题、字体大小、置顶、位置锁定和当前用户登录自启。
 - 可选 CPU/GPU/内存等状态及 IPv4/IPv6 双栈网页仪表盘。
 - 可选访问密码；中文密码、采集快照缓存和有界 HTTP 请求处理。
-- 在设置中检查新版本，查看 Release 更新内容，下载校验后更新安装版或便携版。
+- 在设置左下角检查新版本，有更新时弹窗展示内容，并在同一弹窗下载、安装。
 
 ## 使用
 
@@ -47,7 +47,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish.ps1
 
 已通过自动化测试、正式 EXE 资源验证、本机 200% DPI 的首次悬浮/设置窗口布局检查和任务栏挂载检查。注销登录、新虚拟屏幕、实际跨不同 DPI 屏幕、硬件授权链路及安装卸载仍需在不同机器验收。任务栏挂载依赖 Explorer 窗口结构，系统升级或第三方任务栏可能影响兼容性。
 
-启动时自动检查，也可在设置 → 软件更新中手动检查。发现新版本弹窗显示完整内容；下载显示进度，完成后可稍后安装。重新检查直接复用通过校验的缓存。点击“安装更新”后才退出软件：安装版打开原目录安装向导，便携版显示独立安装进度并保留配置；随后重新启动。旧版 v2.0.0 首次升级需手动下载 v2.1.0。更多流程和失败恢复见 [更新说明](https://github.com/mitu810/NetSpeedWidget/blob/main/docs/UPDATES.md)。当前发行 EXE 未做代码签名。
+启动时自动检查，也可在设置左下角点击“检查更新”。没有新版本时只在按钮旁显示结果；有新版本弹窗显示完整内容，下载进度也在弹窗内，完成后原按钮直接切换为“安装更新”。重新检查直接复用通过校验的缓存。点击“安装更新”后才退出软件：安装版打开原目录安装向导，便携版显示独立安装进度并保留配置；随后重新启动。旧版 v2.0.0 首次升级需手动下载 v2.1.1。更多流程和失败恢复见 [更新说明](https://github.com/mitu810/NetSpeedWidget/blob/main/docs/UPDATES.md)。当前发行 EXE 未做代码签名。
 
 ## 许可证
 

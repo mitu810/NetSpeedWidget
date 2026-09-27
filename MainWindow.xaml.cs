@@ -68,13 +68,14 @@ namespace NetSpeedWidget
         private int _speedRefreshPending;
         private int _overlayRefreshPending;
         private bool _isExiting;
-        private readonly bool _isUpdateSmokeTest = Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-update") >= 0;
-        private readonly bool _isDpiSmokeTest = Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-dpi") >= 0 || Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-update") >= 0;
+        private readonly bool _isUpdateSmokeTest = Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-update") >= 0 || Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-update-current") >= 0;
+        private readonly bool _isDpiSmokeTest = Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-dpi") >= 0 || Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-update") >= 0 || Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-update-current") >= 0;
         private readonly bool _isSmokeTest = Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-ui") >= 0 ||
-            Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-dpi") >= 0 || Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-update") >= 0;
+            Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-dpi") >= 0 || Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-update") >= 0 || Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-update-current") >= 0;
         private XamlRoot? _sizingRoot;
         private double _windowScale;
         private Microsoft.UI.Xaml.DispatcherTimer? _smokeTimer;
+        private readonly DateTime _smokeStartedAt = DateTime.UtcNow;
         private DateTime _lastOverlayRecoveryUtc;
         private readonly AppWindow _appWindow;
         private readonly IntPtr _hwnd;
@@ -172,6 +173,8 @@ namespace NetSpeedWidget
         /// <summary>验证当前任务栏的真实挂载、绘制和可见性，不注册自启、不请求 UAC。</summary>
         private void CompleteUiSmokeTest()
         {
+            if (Array.IndexOf(Environment.GetCommandLineArgs(), "--verify-download-popup") >= 0 &&
+                _settingsWindow?.UpdateDownloadVerificationFinished != true && DateTime.UtcNow - _smokeStartedAt < TimeSpan.FromSeconds(75)) return;
             _smokeTimer?.Stop();
             if (_isDpiSmokeTest)
             {

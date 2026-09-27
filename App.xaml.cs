@@ -41,7 +41,8 @@ namespace NetSpeedWidget
                 return;
             }
             // 1. 在创建窗口前登记实例，重复启动转发给原窗口。
-            var smokeKey = Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-update") >= 0 ? ".SmokeUpdate" :
+            var smokeKey = Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-update-current") >= 0 ? ".SmokeUpdateCurrent" :
+                Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-update") >= 0 ? ".SmokeUpdate" :
                 Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-dpi") >= 0 ? ".SmokeDpi" :
                 Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-ui") >= 0 ? ".SmokeUi" : "";
             var instance = AppInstance.FindOrRegisterForKey("NetSpeedWidget." + WindowsIdentity.GetCurrent().User!.Value + smokeKey);
