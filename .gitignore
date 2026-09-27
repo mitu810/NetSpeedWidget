@@ -33,3 +33,5 @@ dpi-smoke-verification.json
 !/docs/UPDATES.md
 update-result.txt
 **/cache/
+**/__pycache__/
+*.pyc
