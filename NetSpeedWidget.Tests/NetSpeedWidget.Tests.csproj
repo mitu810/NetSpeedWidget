@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Models\UpdateRelease.cs" Link="Models\UpdateRelease.cs" />
+    <Compile Include="..\Services\UpdateCache.cs" Link="Services\UpdateCache.cs" />
+    <Compile Include="..\Services\UpdateService.cs" Link="Services\UpdateService.cs" />
+    <Compile Include="..\Services\PortableUpdate.cs" Link="Services\PortableUpdate.cs" />
     <EmbeddedResource Include="..\Assets\Dashboard.html" LogicalName="NetSpeedWidget.Assets.Dashboard.html" />
     <Compile Include="..\Services\HttpRequestReader.cs" Link="Services\HttpRequestReader.cs" />
     <Compile Include="..\Services\PasswordHashService.cs" Link="Services\PasswordHashService.cs" />

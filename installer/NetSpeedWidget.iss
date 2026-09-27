@@ -4,10 +4,13 @@
 #ifndef OutputDirectory
   #define OutputDirectory SourceDirectory
 #endif
+#ifndef AppVersion
+  #error AppVersion must be supplied by scripts/publish.ps1
+#endif
 [Setup]
 AppId={{8ADC845B-A790-4F50-98EA-8C87FE0309A8}
 AppName=NetSpeedWidget
-AppVersion=2.0.0
+AppVersion={#AppVersion}
 DefaultDirName={localappdata}\Programs\NetSpeedWidget
 DefaultGroupName=NetSpeedWidget
 PrivilegesRequired=lowest
@@ -34,12 +37,22 @@ Name: "{autodesktop}\NetSpeedWidget"; Filename: "{app}\NetSpeedWidget.exe"; Task
 [Tasks]
 Name: "desktopicon"; Description: "创建桌面快捷方式"; Flags: unchecked
 [Run]
-Filename: "{app}\NetSpeedWidget.exe"; Description: "启动 NetSpeedWidget"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\NetSpeedWidget.exe"; Description: "启动 NetSpeedWidget"; Flags: nowait postinstall skipifsilent; Check: not UpdatingFromApp
 [UninstallRun]
 Filename: "{app}\NetSpeedWidget.exe"; Parameters: "--unregister-hardware"; Flags: runhidden waituntilterminated; RunOnceId: "HardwareTaskCleanup"
 [UninstallDelete]
 Type: files; Name: "{app}\installed.marker"
 [Code]
+function UpdatingFromApp: Boolean;
+begin
+  Result := ExpandConstant('{param:UPDATEFROMAPP|0}') = '1';
+end;
+
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  Result := UpdatingFromApp and (PageID = wpSelectDir);
+end;
+
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 var
   StartupValue: String;

@@ -24,9 +24,9 @@ def main():
     findings = []
     for name in filter(None, paths):
         path = PurePosixPath(name)
-        forbidden_dirs = {"bin", "obj", "publish", "artifacts", ".backups", ".vs", ".superpowers"}
+        forbidden_dirs = {"bin", "obj", "publish", "artifacts", "cache", ".backups", ".vs", ".superpowers"}
         if (forbidden_dirs.intersection(path.parts) or path.suffix.lower() in {".exe", ".dll", ".pdb", ".dmp", ".log"}
-                or path.name == "settings.json" or path.name.startswith(".env")
+                or path.name in {"settings.json", "update-result.txt"} or path.name.startswith(".env")
                 or path.name.startswith("hardware-diagnostics")):
             findings.append((name, "不应提交的本地文件"))
         blob = subprocess.check_output(["git", "show", ":" + name])

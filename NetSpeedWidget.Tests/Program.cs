@@ -10,6 +10,15 @@ namespace NetSpeedWidget.Tests
     {
         private static void Main(string[] args)
         {
+            if (args.Length >= 2 && args[0] == "--check-release")
+            {
+                using var updater = new UpdateService();
+                var release = updater.CheckAsync(Version.Parse(args[1]), Array.Exists(args, arg => arg == "--installed"), default).GetAwaiter().GetResult();
+                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(release));
+                if (args.Length >= 4 && args[2] == "--download" && release is not null)
+                    Console.WriteLine(updater.DownloadAsync(release, args[3], null, default).GetAwaiter().GetResult());
+                return;
+            }
             if (Array.Exists(
                 args,
                 argument => string.Equals(argument, "--hardware-diagnostics", StringComparison.OrdinalIgnoreCase)))
@@ -19,6 +28,7 @@ namespace NetSpeedWidget.Tests
                 return;
             }
 
+            UpdateTests.RunAsync().GetAwaiter().GetResult();
             StabilityTests.RunAsync().GetAwaiter().GetResult();
             TestFirstSnapshotReturnsZeroSpeed();
             TestSecondSnapshotCalculatesDownloadAndUploadSpeed();

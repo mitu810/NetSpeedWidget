@@ -40,3 +40,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish.ps1
 ## 验证边界
 
 自动化测试覆盖 HTTP/IPC 分段与大小边界、中文密码、真实 TCP 登录、窗口注册表增删、采集缓存、配置合并和首次授权失败。实际 200% DPI 的新进程窗口布局及任务栏挂载已检查；注销登录、新虚拟屏幕、混合 DPI、管理员硬件链路和完整安装卸载仍需现场验证。不要把纯计算测试或构建成功当作这些场景的验收。
+
+## 软件更新（v2.1.0）
+
+更新页代码在 SettingsWindow.Updates.cs；UpdateService 负责匿名 GitHub 检查和流式下载，UpdateLauncher 负责更新辅助程序就绪握手，NetSpeedWidget.Updater 负责等待原进程、安装向导或便携替换与重启；PortableUpdate 提供白名单解压和备份回滚。publish.ps1 同时嵌入硬件和更新辅助程序。规范、测试与未验收边界见 [UPDATES.md](UPDATES.md)。`--smoke-update` 使用独立实例和默认配置，仅展示更新页布局，五秒后写入 DPI 校验记录并退出。
+
+补充：发现更新统一通过 ContentDialog 弹窗提示；启动后台检查与手动检查复用同一弹窗。UpdateCache 按版本/发行类型管理实际 EXE 下的 cache/updates，下载与安装分开，缓存需重复校验后才能安装。便携安装进度由独立普通权限 WinForms 窗口显示，安装版使用 Inno 的实际安装进度。AppPaths 统一 EXE 目录数据位置，旧安装版配置只在目标不存在时复制迁移。

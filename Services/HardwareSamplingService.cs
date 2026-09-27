@@ -131,7 +131,7 @@ public sealed class HardwareSamplingService : IDisposable
         }
         var hash = Convert.ToHexString(SHA256.HashData(resource))[..16];
         resource.Position = 0;
-        var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NetSpeedWidget", "HelperPackages", hash);
+        var directory = Path.Combine(AppPaths.CacheDirectory, "HelperPackages", hash);
         Directory.CreateDirectory(directory);
         // 2. 每次授权都覆盖资源内容，避免使用不完整的旧解压结果。
         using var archive = new ZipArchive(resource, ZipArchiveMode.Read);

@@ -155,6 +155,15 @@
                                 Style="{StaticResource SettingsNavigationTextStyle}"/>
                         </Grid>
                     </Button>
+                    <Button x:Name="UpdateNavigationButton" Style="{StaticResource SettingsNavigationButtonStyle}"
+                            AutomationProperties.Name="软件更新" Click="UpdateNavigationButton_Click">
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="8"/><ColumnDefinition Width="24"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <Border x:Name="UpdateNavigationSelectionBar" Width="3" Height="18" CornerRadius="2" VerticalAlignment="Center" Background="Transparent"/>
+                            <SymbolIcon Grid.Column="1" Symbol="Download"/>
+                            <TextBlock x:Name="UpdateNavigationText" Grid.Column="2" Text="软件更新" Style="{StaticResource SettingsNavigationTextStyle}"/>
+                        </Grid>
+                    </Button>
                 </StackPanel>
             </Border>
 
@@ -748,6 +757,24 @@
                                 </Grid>
                             </Border>
                         </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+                <ScrollViewer x:Name="UpdateSettingsPanel" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Padding="20" Spacing="14">
+                        <TextBlock Text="软件更新" FontSize="24" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="UpdateCurrentVersionText" TextWrapping="Wrap"/>
+                        <TextBlock Text="从本项目 GitHub Release 检查稳定版本，无需账号或令牌。" TextWrapping="Wrap"/>
+                        <Button x:Name="CheckUpdateButton" Content="检查更新" Click="CheckUpdateButton_Click"/>
+                        <TextBlock x:Name="UpdateStateText" Text="尚未检查更新。" TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
+                        <ProgressBar x:Name="UpdateProgress" Minimum="0" Maximum="100" Visibility="Collapsed"/>
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Button x:Name="InstallUpdateButton" Content="下载更新" IsEnabled="False" Click="InstallUpdateButton_Click"/>
+                            <Button x:Name="CancelUpdateButton" Content="取消下载" Visibility="Collapsed" Click="CancelUpdateButton_Click"/>
+                        </StackPanel>
+                        <TextBlock x:Name="UpdateInstallHintText" TextWrapping="Wrap"/>
+                        <Border Style="{StaticResource SettingRowBorderStyle}">
+                            <TextBlock x:Name="UpdateNotesText" Text="检查到新版本后，这里显示完整的更新内容。" TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>

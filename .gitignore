@@ -29,3 +29,7 @@ dpi-smoke-verification.json
 !/docs/RELEASE.md
 !/docs/接口文档-系统状态.md
 !/docs/openapi-系统状态.yaml
+
+!/docs/UPDATES.md
+update-result.txt
+**/cache/

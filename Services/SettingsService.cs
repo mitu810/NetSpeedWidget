@@ -40,6 +40,16 @@ namespace NetSpeedWidget.Services
         public SettingsService()
             : this(GetDefaultSettingsPath())
         {
+            if (!File.Exists(Path.Combine(AppPaths.ExecutableDirectory, "installed.marker"))) return;
+            try
+            {
+                AppPaths.MigrateLegacySettings(AppPaths.ExecutableDirectory,
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NetSpeedWidget"));
+            }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+            {
+                AppLogService.Write("Legacy settings migration failed; original preserved.", error);
+            }
         }
 
         public SettingsService(string settingsPath)

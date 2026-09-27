@@ -12,6 +12,10 @@ public static class PackageVerificationService
     /// <summary>验证正式 EXE 的运行时和内嵌资源，不创建窗口、不注册自启或采集任务。</summary>
     public static void Verify()
     {
+        using var updater = Assembly.GetExecutingAssembly().GetManifestResourceStream("NetSpeedWidget.Updater.exe")
+            ?? throw new InvalidOperationException("发布包缺少更新程序资源。");
+        if (updater.ReadByte() != 'M' || updater.ReadByte() != 'Z')
+            throw new InvalidOperationException("更新程序不是有效 EXE。");
         using var helper = Assembly.GetExecutingAssembly().GetManifestResourceStream("NetSpeedWidget.Hardware.zip")
             ?? throw new InvalidOperationException("发布包缺少硬件采集资源。");
         using var archive = new ZipArchive(helper, ZipArchiveMode.Read);
@@ -27,6 +31,7 @@ public static class PackageVerificationService
             administrator = new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator),
             helperEntries = archive.Entries.Count,
             dashboardAvailable = true,
+            updaterAvailable = true,
             dataDirectory = AppPaths.DataDirectory
         };
         File.WriteAllText(Path.Combine(AppPaths.ExecutableDirectory, "package-verification.json"),

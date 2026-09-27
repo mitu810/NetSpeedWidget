@@ -68,9 +68,10 @@ namespace NetSpeedWidget
         private int _speedRefreshPending;
         private int _overlayRefreshPending;
         private bool _isExiting;
-        private readonly bool _isDpiSmokeTest = Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-dpi") >= 0;
+        private readonly bool _isUpdateSmokeTest = Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-update") >= 0;
+        private readonly bool _isDpiSmokeTest = Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-dpi") >= 0 || Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-update") >= 0;
         private readonly bool _isSmokeTest = Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-ui") >= 0 ||
-            Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-dpi") >= 0;
+            Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-dpi") >= 0 || Array.IndexOf(Environment.GetCommandLineArgs(), "--smoke-update") >= 0;
         private XamlRoot? _sizingRoot;
         private double _windowScale;
         private Microsoft.UI.Xaml.DispatcherTimer? _smokeTimer;
@@ -157,9 +158,11 @@ namespace NetSpeedWidget
             RootGrid.PointerCanceled += RootGrid_PointerCanceled;
 
             Activated += MainWindow_Activated;
+            if (!_isSmokeTest) _ = CheckStartupUpdateAsync();
             if (_isSmokeTest)
             {
                 if (_isDpiSmokeTest) OpenSettingsWindow();
+                if (_isUpdateSmokeTest) _settingsWindow?.ShowUpdateVerificationPage();
                 _smokeTimer = new Microsoft.UI.Xaml.DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
                 _smokeTimer.Tick += (_, _) => CompleteUiSmokeTest();
                 _smokeTimer.Start();
@@ -180,7 +183,8 @@ namespace NetSpeedWidget
                     logicalWidth = RootBackground.ActualWidth,
                     logicalHeight = RootBackground.ActualHeight,
                     contentWidth = ContentPanel.ActualWidth,
-                    settings = _settingsWindow?.GetSizingVerification()
+                    settings = _settingsWindow?.GetSizingVerification(),
+                    updates = _settingsWindow?.GetUpdateSizingVerification()
                 };
                 System.IO.File.WriteAllText(System.IO.Path.Combine(AppPaths.ExecutableDirectory, "dpi-smoke-verification.json"),
                     System.Text.Json.JsonSerializer.Serialize(sizing), new System.Text.UTF8Encoding(false));
@@ -464,7 +468,8 @@ namespace NetSpeedWidget
                         _settings,
                         ApplySettingsFromWindow,
                         _systemStatusHttpServerService.GetState,
-                        _hardwareSamplingService);
+                        _hardwareSamplingService,
+                        ExitApplication);
 
                 _settingsWindow.Closed += (_, _) =>
                 {
