@@ -1,0 +1,415 @@
+openapi: 3.0.3
+info:
+  title: NetSpeedWidget 系统状态接口
+  version: 2.0.0
+  description: NetSpeedWidget 系统状态局域网 HTTP 服务接口，服务优先使用 IPv4/IPv6 双栈监听，系统不支持双栈时自动回退 IPv4；IPv6 URL 需要使用 http://[IPv6地址]:端口/ 方括号格式。接口支持可选 Bearer Token 访问密码认证；CPU/GPU 温度通过 LibreHardwareMonitorLib 读取，其中 CPU 温度只接受 CPU 节点下的 Core Average，通常需要 Windows 管理员权限，主 EXE 使用普通权限，温度由首次单独授权的管理员辅助进程通过当前用户本机管道提供；GPU 占用率优先通过 Windows GPU Engine 性能计数器读取，失败时回退到硬件库 GPU 负载传感器。若设置中启用了访问密码但密码哈希为空，服务端会按未启用认证处理；硬件传感器或性能计数器不受支持时，对应指标返回 Unavailable。JSON 为严格 UTF-8，请求头最大 16 KB、正文最大 64 KB、处理截止时间 10 秒、活动连接最多 16 个，超额连接或超时关闭；解析错误返回 400/413/431 和 invalidRequest，适用于所有路由。
+servers:
+  - url: http://localhost:17890
+    description: 本机默认地址
+  - url: http://{host}:{port}
+    description: 局域网 IPv4 访问地址
+    variables:
+      host:
+        default: 192.0.2.10
+      port:
+        default: "17890"
+  - url: http://[{ipv6Host}]:{port}
+    description: 局域网 IPv6 访问地址，IPv6 主机名必须使用方括号
+    variables:
+      ipv6Host:
+        default: "2001:db8::1234"
+      port:
+        default: "17890"
+paths:
+  /api/auth/state:
+    get:
+      summary: 获取认证状态
+      description: 返回是否启用了访问密码。不会返回密码哈希。若配置中的密码哈希为空，即使开关为启用，也会返回未启用。
+      operationId: getSystemStatusAuthState
+      responses:
+        "200":
+          description: 认证状态
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthStateResponse"
+  /api/auth/login:
+    post:
+      summary: 登录
+      description: 使用 UTF-8 JSON 访问密码登录，Content-Length 按字节计数。新密码使用带盐 PBKDF2-SHA256，兼容已有 SHA256。成功后返回 Bearer token，密码未启用或密码哈希为空时返回空 token。
+      operationId: loginSystemStatus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: 登录成功或密码未启用
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          description: '请求无效（异常长度、重复头、截断、无效 UTF-8 或 chunked）；错误体为 {error: invalidRequest}'
+        "413":
+          description: '正文超过 64 KB；错误体为 {error: invalidRequest}'
+        "431":
+          description: '请求头超过 16 KB；错误体为 {error: invalidRequest}'
+        "401":
+          description: 密码错误
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: unauthorized
+  /api/status:
+    get:
+      summary: 获取系统状态
+      description: 获取当前网速、CPU、GPU、内存等系统状态快照，串行采集并缓存 1 秒。CPU/GPU 温度来自 LibreHardwareMonitorLib；CPU 温度只读取 CPU 节点下的 Core Average，没有该传感器或数值无效时返回 Unavailable，通常需要 Windows 管理员权限；GPU 占用率优先来自 Windows GPU Engine 性能计数器，失败时回退到 LibreHardwareMonitorLib GPU 负载传感器。硬件、驱动或权限环境不支持时返回 Unavailable。启用访问密码后需要 Bearer token。
+      operationId: getSystemStatus
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 当前系统状态快照
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+              example: "*"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemStatusSnapshot"
+        "500":
+          description: 采集异常
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: 未登录或 token 无效
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    options:
+      summary: CORS 预检
+      operationId: optionsSystemStatus
+      responses:
+        "204":
+          description: 无响应体
+  /api/settings:
+    get:
+      summary: 获取仪表盘设置
+      description: 获取网页仪表盘需要的刷新间隔、主题、卡片显示开关和布局顺序。启用访问密码后需要 Bearer token。
+      operationId: getSystemStatusSettings
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 仪表盘设置
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemStatusDashboardSettings"
+        "401":
+          description: 未登录或 token 无效
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/layout:
+    post:
+      summary: 保存卡片布局
+      description: 保存网页仪表盘卡片排序。启用访问密码后需要 Bearer token。服务端会过滤未知卡片、去重、补齐缺失卡片并重新生成连续 order。
+      operationId: saveSystemStatusLayout
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LayoutUpdateRequest"
+      responses:
+        "200":
+          description: 已保存的归一化布局
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LayoutUpdateResponse"
+        "400":
+          description: 布局请求无效
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: invalidLayout
+        "500":
+          description: 保存设置失败
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: saveFailed
+        "401":
+          description: 未登录或 token 无效
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/theme:
+    post:
+      summary: 保存网页主题
+      description: 保存系统状态网页仪表盘主题。启用访问密码后需要 Bearer token。
+      operationId: saveSystemStatusTheme
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ThemeUpdateRequest"
+      responses:
+        "200":
+          description: 保存后的仪表盘设置
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemStatusDashboardSettings"
+        "400":
+          description: 主题请求无效
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: invalidTheme
+        "500":
+          description: 保存设置失败
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: saveFailed
+        "401":
+          description: 未登录或 token 无效
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /:
+    get:
+      summary: 系统状态仪表盘页面
+      description: 返回系统状态浏览器仪表盘页面。页面本身公开返回，页面加载后再判断是否需要登录。
+      operationId: getSystemStatusHome
+      responses:
+        "200":
+          description: HTML 占位页
+          content:
+            text/html:
+              schema:
+                type: string
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 设置页启用访问密码后，登录接口返回的临时 Bearer token。
+  schemas:
+    AuthStateResponse:
+      type: object
+      required:
+        - passwordEnabled
+      properties:
+        passwordEnabled:
+          type: boolean
+          description: 是否真正启用了访问密码。配置里的密码哈希为空时会视为未启用。
+    LoginRequest:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          description: 访问密码明文。服务端只用它做校验，不保存明文。
+          example: your-password
+    LoginResponse:
+      type: object
+      required:
+        - passwordEnabled
+        - token
+      properties:
+        passwordEnabled:
+          type: boolean
+          description: 是否真正启用了访问密码。配置里的密码哈希为空时会视为未启用。
+        token:
+          type: string
+          description: 登录成功后的 Bearer token。密码未启用时为空字符串。
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: token 过期时间。密码未启用时为 null。
+    SystemStatusSnapshot:
+      type: object
+      required:
+        - timestamp
+        - downloadSpeed
+        - uploadSpeed
+        - cpuUsage
+        - cpuTemperature
+        - gpuUsage
+        - gpuTemperature
+        - memoryUsage
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: 快照生成时间。
+        downloadSpeed:
+          $ref: "#/components/schemas/SystemMetricValue"
+        uploadSpeed:
+          $ref: "#/components/schemas/SystemMetricValue"
+        cpuUsage:
+          $ref: "#/components/schemas/SystemMetricValue"
+        cpuTemperature:
+          $ref: "#/components/schemas/SystemMetricValue"
+        gpuUsage:
+          $ref: "#/components/schemas/SystemMetricValue"
+        gpuTemperature:
+          $ref: "#/components/schemas/SystemMetricValue"
+        memoryUsage:
+          $ref: "#/components/schemas/SystemMetricValue"
+    SystemMetricValue:
+      type: object
+      required:
+        - status
+        - displayText
+        - unit
+      properties:
+        status:
+          type: string
+          enum:
+            - Available
+            - Unavailable
+          description: 指标是否可用。
+        displayText:
+          type: string
+          description: 前端可直接展示的文本。
+        numericValue:
+          type: number
+          nullable: true
+          description: 指标数值。不可用时为 null。
+        unit:
+          type: string
+          description: 单位。
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: 错误码。
+    SystemStatusDashboardSettings:
+      type: object
+      required:
+        - refreshIntervalSeconds
+        - webTheme
+        - effectiveTheme
+        - cards
+        - layout
+      properties:
+        refreshIntervalSeconds:
+          type: integer
+          description: 页面刷新间隔，单位秒。
+          example: 1
+        webTheme:
+          type: string
+          enum:
+            - FollowApp
+            - Light
+            - Dark
+          description: 设置页保存的网页主题。
+        effectiveTheme:
+          type: string
+          enum:
+            - Light
+            - Dark
+          description: 页面最终生效主题。
+        cards:
+          $ref: "#/components/schemas/SystemStatusCardSettings"
+        layout:
+          type: array
+          items:
+            $ref: "#/components/schemas/SystemStatusCardLayoutItem"
+    SystemStatusCardSettings:
+      type: object
+      properties:
+        networkSpeedVisible:
+          type: boolean
+        cpuUsageVisible:
+          type: boolean
+        cpuTemperatureVisible:
+          type: boolean
+        gpuUsageVisible:
+          type: boolean
+        gpuTemperatureVisible:
+          type: boolean
+        memoryUsageVisible:
+          type: boolean
+    SystemStatusCardLayoutItem:
+      type: object
+      properties:
+        cardKey:
+          type: string
+          enum:
+            - network
+            - cpuUsage
+            - cpuTemperature
+            - gpuUsage
+            - gpuTemperature
+            - memory
+          example: network
+        order:
+          type: integer
+          example: 0
+    LayoutUpdateRequest:
+      type: object
+      required:
+        - layout
+      properties:
+        layout:
+          type: array
+          items:
+            $ref: "#/components/schemas/SystemStatusCardLayoutItem"
+    LayoutUpdateResponse:
+      type: object
+      required:
+        - layout
+      properties:
+        layout:
+          type: array
+          items:
+            $ref: "#/components/schemas/SystemStatusCardLayoutItem"
+    ThemeUpdateRequest:
+      type: object
+      required:
+        - webTheme
+      properties:
+        webTheme:
+          type: string
+          enum:
+            - FollowApp
+            - Light
+            - Dark
+          example: Dark

@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>系统状态</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --page: #15171a;
+            --panel: #202329;
+            --panel-strong: #2a2f37;
+            --text: #f4f7fb;
+            --muted: #9aa5b1;
+            --line: #373d46;
+            --accent: #27c4a6;
+            --warn: #f0b35a;
+            --shadow: rgba(0, 0, 0, 0.28);
+        }
+
+        :root[data-theme="light"] {
+            color-scheme: light;
+            --page: #f3f5f7;
+            --panel: #ffffff;
+            --panel-strong: #eef1f5;
+            --text: #1d2733;
+            --muted: #657383;
+            --line: #d9dee6;
+            --accent: #0d7f72;
+            --warn: #b36312;
+            --shadow: rgba(24, 39, 56, 0.10);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--page);
+            color: var(--text);
+            font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif;
+            letter-spacing: 0;
+        }
+
+        .shell {
+            width: min(1120px, 100%);
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 10px 0 18px;
+        }
+
+        .title-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 28px;
+            line-height: 1.15;
+            font-weight: 650;
+        }
+
+        .updated {
+            color: var(--muted);
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .theme-button {
+            min-width: 88px;
+            height: 34px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: var(--panel);
+            color: var(--text);
+            font: inherit;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .theme-button:hover {
+            background: var(--panel-strong);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        .card {
+            height: 206px;
+            padding: 16px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--panel);
+            box-shadow: 0 12px 28px var(--shadow);
+            display: grid;
+            grid-template-rows: auto 1fr;
+            overflow: hidden;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 14px;
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex: 0 0 auto;
+        }
+
+        .card[data-available="false"] .status-dot {
+            background: var(--warn);
+        }
+
+        .card[draggable="true"] {
+            cursor: grab;
+        }
+
+        .card.dragging {
+            opacity: 0.68;
+            cursor: grabbing;
+            outline: 2px solid var(--accent);
+        }
+
+        .metric {
+            display: grid;
+            gap: 4px;
+            margin-top: 10px;
+            min-width: 0;
+        }
+
+        .metric-label {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .metric-value {
+            color: var(--text);
+            font-size: 26px;
+            line-height: 1.18;
+            font-weight: 650;
+            overflow-wrap: anywhere;
+        }
+
+        .metric-value.small {
+            font-size: 18px;
+            line-height: 1.25;
+        }
+
+        .network-lines {
+            display: grid;
+            grid-template-rows: minmax(0, auto) minmax(0, auto);
+            gap: 10px;
+            align-content: start;
+            min-height: 0;
+        }
+
+        .error {
+            display: inline-flex;
+            align-items: center;
+            min-height: 0;
+            padding: 4px 8px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            color: var(--warn);
+            font-size: 14px;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .error:empty {
+            display: none;
+        }
+
+        .error:not(:empty) {
+            border-color: var(--warn);
+        }
+
+        .login-panel {
+            display: none;
+            max-width: 360px;
+            margin-top: 18px;
+            padding: 16px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--panel);
+        }
+
+        .login-panel[data-visible="true"] {
+            display: block;
+        }
+
+        .login-form {
+            display: grid;
+            gap: 10px;
+        }
+
+        .password-input {
+            height: 38px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 0 10px;
+            background: var(--panel-strong);
+            color: var(--text);
+            font: inherit;
+        }
+
+        .login-button {
+            height: 38px;
+            border: 0;
+            border-radius: 6px;
+            background: var(--accent);
+            color: #ffffff;
+            font: inherit;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        @media (max-width: 560px) {
+            .shell {
+                padding: 14px;
+            }
+
+            header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .error {
+                white-space: normal;
+            }
+
+            .updated {
+                white-space: normal;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="shell">
+        <header>
+            <div class="title-row">
+                <h1>系统状态</h1>
+                <div id="error" class="error"></div>
+            </div>
+            <div class="actions">
+                <button id="themeButton" class="theme-button" type="button">主题</button>
+                <div id="updated" class="updated">--</div>
+            </div>
+        </header>
+        <section id="loginPanel" class="login-panel">
+            <form id="loginForm" class="login-form">
+                <input id="passwordInput" class="password-input" type="password" autocomplete="current-password" placeholder="访问密码">
+                <button class="login-button" type="submit">登录</button>
+            </form>
+        </section>
+        <section id="cards" class="grid" aria-live="polite"></section>
+    </main>
+    <script>
+        const cardDefinitions = [
+            { key: "network", visibleKey: "networkSpeedVisible", title: "网速", type: "network" },
+            { key: "cpuUsage", visibleKey: "cpuUsageVisible", title: "CPU 占用率", metric: "cpuUsage" },
+            { key: "cpuTemperature", visibleKey: "cpuTemperatureVisible", title: "CPU 温度", metric: "cpuTemperature" },
+            { key: "gpuUsage", visibleKey: "gpuUsageVisible", title: "GPU 占用率", metric: "gpuUsage" },
+            { key: "gpuTemperature", visibleKey: "gpuTemperatureVisible", title: "GPU 温度", metric: "gpuTemperature" },
+            { key: "memory", visibleKey: "memoryUsageVisible", title: "内存占用率", metric: "memoryUsage", small: true }
+        ];
+
+        let dashboardSettings = {
+            refreshIntervalSeconds: 1,
+            effectiveTheme: "Dark",
+            cards: {},
+            layout: []
+        };
+        let refreshTimer = 0;
+        let authToken = localStorage.getItem("systemStatusToken") || "";
+        let passwordEnabled = false;
+
+        function applyTheme() {
+            const theme = dashboardSettings.effectiveTheme === "Light" ? "light" : "dark";
+            document.documentElement.dataset.theme = theme;
+            document.getElementById("themeButton").textContent =
+                dashboardSettings.effectiveTheme === "Light" ? "深色" : "浅色";
+        }
+
+        function getOrder(cardKey) {
+            const item = (dashboardSettings.layout || []).find(value => value.cardKey === cardKey);
+            return item ? item.order : 999;
+        }
+
+        function isVisible(definition) {
+            const cards = dashboardSettings.cards || {};
+            return cards[definition.visibleKey] !== false;
+        }
+
+        function authHeaders(extraHeaders) {
+            const headers = { ...(extraHeaders || {}) };
+
+            if (authToken) {
+                headers.Authorization = `Bearer ${authToken}`;
+            }
+
+            return headers;
+        }
+
+        function showLogin(show) {
+            document.getElementById("loginPanel").dataset.visible = String(show);
+            document.getElementById("cards").style.display = show ? "none" : "";
+            document.getElementById("themeButton").disabled = show;
+
+            if (show) {
+                window.clearInterval(refreshTimer);
+            }
+        }
+
+        async function loadAuthState() {
+            const response = await fetch("/api/auth/state", { cache: "no-store" });
+            if (!response.ok) {
+                throw new Error("auth-state");
+            }
+
+            const state = await response.json();
+            passwordEnabled = state.passwordEnabled === true;
+            showLogin(passwordEnabled && !authToken);
+        }
+
+        async function login(password) {
+            const response = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password })
+            });
+
+            if (!response.ok) {
+                throw new Error("login");
+            }
+
+            const result = await response.json();
+            authToken = result.token || "";
+            localStorage.setItem("systemStatusToken", authToken);
+            showLogin(false);
+        }
+
+        function handleUnauthorized(response) {
+            if (response.status !== 401) {
+                return false;
+            }
+
+            authToken = "";
+            localStorage.removeItem("systemStatusToken");
+            showLogin(true);
+            document.getElementById("error").textContent = "需要登录";
+            return true;
+        }
+
+        function metricText(metric) {
+            return metric && metric.displayText ? metric.displayText : "不可用";
+        }
+
+        function metricAvailable(metric) {
+            return metric && metric.status === "Available";
+        }
+
+        function appendMetric(card, label, metric, small) {
+            const row = document.createElement("div");
+            row.className = "metric";
+
+            const labelNode = document.createElement("div");
+            labelNode.className = "metric-label";
+            labelNode.textContent = label;
+
+            const valueNode = document.createElement("div");
+            valueNode.className = small ? "metric-value small" : "metric-value";
+            valueNode.textContent = metricText(metric);
+
+            row.append(labelNode, valueNode);
+            card.appendChild(row);
+        }
+
+        function createCard(definition, status) {
+            const card = document.createElement("article");
+            card.className = "card";
+
+            const title = document.createElement("div");
+            title.className = "card-title";
+            const titleText = document.createElement("span");
+            titleText.textContent = definition.title;
+            const dot = document.createElement("span");
+            dot.className = "status-dot";
+            title.append(titleText, dot);
+            card.appendChild(title);
+
+            if (definition.type === "network") {
+                card.dataset.available = String(metricAvailable(status.downloadSpeed) || metricAvailable(status.uploadSpeed));
+                const network = document.createElement("div");
+                network.className = "network-lines";
+                card.appendChild(network);
+                appendMetric(network, "下载", status.downloadSpeed, false);
+                appendMetric(network, "上传", status.uploadSpeed, false);
+                return card;
+            }
+
+            const metric = status[definition.metric];
+            card.dataset.available = String(metricAvailable(metric));
+            card.style.alignContent = "start";
+            appendMetric(card, "当前", metric, definition.small === true);
+            return card;
+        }
+
+        function render(status) {
+            const cards = document.getElementById("cards");
+            cards.replaceChildren();
+
+            cardDefinitions
+        .filter(isVisible)
+        .sort((left, right) => getOrder(left.key) - getOrder(right.key))
+        .forEach(definition => {
+            const card = createCard(definition, status);
+            card.dataset.cardKey = definition.key;
+            card.draggable = true;
+            card.addEventListener("dragstart", handleDragStart);
+            card.addEventListener("dragover", handleDragOver);
+            card.addEventListener("drop", handleDrop);
+            card.addEventListener("dragend", handleDragEnd);
+            cards.appendChild(card);
+        });
+
+            const timestamp = status && status.timestamp ? new Date(status.timestamp) : new Date();
+            document.getElementById("updated").textContent = `最后更新 ${timestamp.toLocaleTimeString()}`;
+        }
+
+        async function loadSettings() {
+            const response = await fetch(
+                "/api/settings",
+                {
+                    cache: "no-store",
+                    headers: authHeaders()
+                });
+            if (handleUnauthorized(response)) {
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error("settings");
+            }
+
+            dashboardSettings = await response.json();
+            applyTheme();
+        }
+
+        let statusRequestPending = false;
+        async function refreshStatus() {
+            if (statusRequestPending) return;
+            statusRequestPending = true;
+            try {
+                const response = await fetch(
+                    "/api/status",
+                    {
+                        cache: "no-store",
+                        headers: authHeaders()
+                    });
+                if (handleUnauthorized(response)) {
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error("status");
+                }
+
+                render(await response.json());
+                document.getElementById("error").textContent = "";
+            } catch {
+                document.getElementById("error").textContent = "连接中断";
+            } finally {
+                statusRequestPending = false;
+            }
+        }
+
+        let draggedCardKey = "";
+
+        function handleDragStart(event) {
+            draggedCardKey = event.currentTarget.dataset.cardKey || "";
+            event.currentTarget.classList.add("dragging");
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", draggedCardKey);
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = "move";
+        }
+
+        async function handleDrop(event) {
+            event.preventDefault();
+            const targetCard = event.currentTarget;
+            const sourceCard = [...document.querySelectorAll(".card")]
+                .find(card => card.dataset.cardKey === draggedCardKey);
+
+            if (!sourceCard || sourceCard === targetCard) {
+                return;
+            }
+
+            const cards = document.getElementById("cards");
+            const targetIndex = [...cards.children].indexOf(targetCard);
+            const sourceIndex = [...cards.children].indexOf(sourceCard);
+
+            if (sourceIndex < targetIndex) {
+                targetCard.after(sourceCard);
+            } else {
+                targetCard.before(sourceCard);
+            }
+
+            await saveLayout();
+        }
+
+        function handleDragEnd(event) {
+            event.currentTarget.classList.remove("dragging");
+            draggedCardKey = "";
+        }
+
+        async function saveLayout() {
+            const layout = [...document.querySelectorAll(".card")]
+                .map((card, index) => ({
+                    cardKey: card.dataset.cardKey,
+                    order: index
+                }));
+
+            dashboardSettings.layout = layout;
+
+            const response = await fetch("/api/layout", {
+                method: "POST",
+                headers: authHeaders({ "Content-Type": "application/json" }),
+                body: JSON.stringify({ layout })
+            });
+
+            if (handleUnauthorized(response)) {
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error("layout");
+            }
+        }
+
+        async function toggleTheme() {
+            const nextTheme = dashboardSettings.effectiveTheme === "Light" ? "Dark" : "Light";
+            dashboardSettings.webTheme = nextTheme;
+            dashboardSettings.effectiveTheme = nextTheme;
+            applyTheme();
+
+            const response = await fetch("/api/theme", {
+                method: "POST",
+                headers: authHeaders({ "Content-Type": "application/json" }),
+                body: JSON.stringify({ webTheme: nextTheme })
+            });
+
+            if (handleUnauthorized(response)) {
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error("theme");
+            }
+
+            dashboardSettings = await response.json();
+            applyTheme();
+        }
+
+        async function start() {
+            document.getElementById("loginForm").addEventListener("submit", async event => {
+                event.preventDefault();
+                const passwordInput = document.getElementById("passwordInput");
+
+                try {
+                    await login(passwordInput.value);
+                    passwordInput.value = "";
+                    document.getElementById("error").textContent = "";
+                    await loadSettings();
+                    await refreshStatus();
+                } catch {
+                    document.getElementById("error").textContent = "密码错误";
+                }
+            });
+
+            document.getElementById("themeButton").addEventListener("click", async () => {
+                try {
+                    await toggleTheme();
+                } catch {
+                    document.getElementById("error").textContent = "主题保存失败";
+                }
+            });
+
+            try {
+                await loadAuthState();
+                if (passwordEnabled && !authToken) {
+                    return;
+                }
+
+                await loadSettings();
+            } catch {
+                applyTheme();
+            }
+
+            await refreshStatus();
+            const interval = Math.max(1, Number(dashboardSettings.refreshIntervalSeconds) || 1) * 1000;
+            refreshTimer = window.setInterval(refreshStatus, interval);
+        }
+
+        start();
+    </script>
+</body>
+</html>

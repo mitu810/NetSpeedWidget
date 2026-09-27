@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <Deterministic>true</Deterministic>
+    <!-- 编译产物不嵌入开发者的本机源码目录。 -->
+    <PathMap>$(MSBuildThisFileDirectory)=/_/NetSpeedWidget/</PathMap>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\Services\HardwareStatusService.cs" Link="Services\HardwareStatusService.cs" />
+    <Compile Include="..\Services\HardwareSamplingProtocol.cs" Link="Services\HardwareSamplingProtocol.cs" />
+    <Compile Include="..\Services\HardwareTaskService.cs" Link="Services\HardwareTaskService.cs" />
+    <Compile Include="..\Services\AppLogService.cs" Link="Services\AppLogService.cs" />
+    <Compile Include="..\Services\AppPaths.cs" Link="Services\AppPaths.cs" />
+    <Compile Include="..\Models\HardwareStatusSnapshot.cs" Link="Models\HardwareStatusSnapshot.cs" />
+    <Compile Include="..\Models\SystemMetricValue.cs" Link="Models\SystemMetricValue.cs" />
+    <Compile Include="..\Models\SystemMetricStatus.cs" Link="Models\SystemMetricStatus.cs" />
+    <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.6" />
+  </ItemGroup>
+</Project>

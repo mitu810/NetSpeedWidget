@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\Assets\Dashboard.html" LogicalName="NetSpeedWidget.Assets.Dashboard.html" />
+    <Compile Include="..\Services\HttpRequestReader.cs" Link="Services\HttpRequestReader.cs" />
+    <Compile Include="..\Services\PasswordHashService.cs" Link="Services\PasswordHashService.cs" />
+    <Compile Include="..\Services\TaskbarOverlayRegistry.cs" Link="Services\TaskbarOverlayRegistry.cs" />
+    <Compile Include="..\Services\AppPaths.cs" Link="Services\AppPaths.cs" />
+    <Compile Include="..\Services\WindowDpiService.cs" Link="Services\WindowDpiService.cs" />
+    <Compile Include="..\Services\HardwareSamplingProtocol.cs" Link="Services\HardwareSamplingProtocol.cs" />
+    <Compile Include="..\Services\HardwareTaskService.cs" Link="Services\HardwareTaskService.cs" />
+    <Compile Include="..\Services\HardwareSamplingService.cs" Link="Services\HardwareSamplingService.cs" />
+    <Compile Include="..\Services\NetworkSpeedCalculator.cs" Link="Services\NetworkSpeedCalculator.cs" Condition="Exists('..\Services\NetworkSpeedCalculator.cs')" />
+    <Compile Include="..\Services\CpuUsageCalculator.cs" Link="Services\CpuUsageCalculator.cs" Condition="Exists('..\Services\CpuUsageCalculator.cs')" />
+    <Compile Include="..\Services\MemoryStatusService.cs" Link="Services\MemoryStatusService.cs" Condition="Exists('..\Services\MemoryStatusService.cs')" />
+    <Compile Include="..\Services\HardwareStatusService.cs" Link="Services\HardwareStatusService.cs" Condition="Exists('..\Services\HardwareStatusService.cs')" />
+    <Compile Include="..\Services\GpuUsageCounterService.cs" Link="Services\GpuUsageCounterService.cs" Condition="Exists('..\Services\GpuUsageCounterService.cs')" />
+    <Compile Include="..\Services\NetworkMonitorService.cs" Link="Services\NetworkMonitorService.cs" Condition="Exists('..\Services\NetworkMonitorService.cs')" />
+    <Compile Include="..\Services\SystemStatusCollectorService.cs" Link="Services\SystemStatusCollectorService.cs" Condition="Exists('..\Services\SystemStatusCollectorService.cs')" />
+    <Compile Include="..\Services\SystemStatusHttpServerService.cs" Link="Services\SystemStatusHttpServerService.cs" Condition="Exists('..\Services\SystemStatusHttpServerService.cs')" />
+    <Compile Include="..\Models\AppSettings.cs" Link="Models\AppSettings.cs" Condition="Exists('..\Models\AppSettings.cs')" />
+    <Compile Include="..\Models\SystemStatusSettings.cs" Link="Models\SystemStatusSettings.cs" Condition="Exists('..\Models\SystemStatusSettings.cs')" />
+    <Compile Include="..\Models\SystemStatusCardSettings.cs" Link="Models\SystemStatusCardSettings.cs" Condition="Exists('..\Models\SystemStatusCardSettings.cs')" />
+    <Compile Include="..\Models\SystemStatusCardLayoutItem.cs" Link="Models\SystemStatusCardLayoutItem.cs" Condition="Exists('..\Models\SystemStatusCardLayoutItem.cs')" />
+    <Compile Include="..\Models\SystemStatusHttpServerState.cs" Link="Models\SystemStatusHttpServerState.cs" Condition="Exists('..\Models\SystemStatusHttpServerState.cs')" />
+    <Compile Include="..\Models\SystemStatusWebTheme.cs" Link="Models\SystemStatusWebTheme.cs" Condition="Exists('..\Models\SystemStatusWebTheme.cs')" />
+    <Compile Include="..\Models\SystemMetricStatus.cs" Link="Models\SystemMetricStatus.cs" Condition="Exists('..\Models\SystemMetricStatus.cs')" />
+    <Compile Include="..\Models\SystemMetricValue.cs" Link="Models\SystemMetricValue.cs" Condition="Exists('..\Models\SystemMetricValue.cs')" />
+    <Compile Include="..\Models\HardwareStatusSnapshot.cs" Link="Models\HardwareStatusSnapshot.cs" Condition="Exists('..\Models\HardwareStatusSnapshot.cs')" />
+    <Compile Include="..\Models\SystemStatusSnapshot.cs" Link="Models\SystemStatusSnapshot.cs" Condition="Exists('..\Models\SystemStatusSnapshot.cs')" />
+    <Compile Include="..\Models\AppThemeMode.cs" Link="Models\AppThemeMode.cs" Condition="Exists('..\Models\AppThemeMode.cs')" />
+    <Compile Include="..\Models\WidgetDisplayMode.cs" Link="Models\WidgetDisplayMode.cs" Condition="Exists('..\Models\WidgetDisplayMode.cs')" />
+    <Compile Include="..\Services\SettingsService.cs" Link="Services\SettingsService.cs" Condition="Exists('..\Services\SettingsService.cs')" />
+    <Compile Include="..\Services\StartupService.cs" Link="Services\StartupService.cs" Condition="Exists('..\Services\StartupService.cs')" />
+    <Compile Include="..\Services\AppLogService.cs" Link="Services\AppLogService.cs" Condition="Exists('..\Services\AppLogService.cs')" />
+    <Compile Include="..\Services\WindowStyleService.cs" Link="Services\WindowStyleService.cs" Condition="Exists('..\Services\WindowStyleService.cs')" />
+    <Compile Include="..\Services\WindowTitleBarService.cs" Link="Services\WindowTitleBarService.cs" Condition="Exists('..\Services\WindowTitleBarService.cs')" />
+    <Compile Include="..\Services\WidgetPlacementService.cs" Link="Services\WidgetPlacementService.cs" Condition="Exists('..\Services\WidgetPlacementService.cs')" />
+    <Compile Include="..\Services\TrayIconService.cs" Link="Services\TrayIconService.cs" Condition="Exists('..\Services\TrayIconService.cs')" />
+    <Compile Include="..\Services\NativeTextOverlayRenderService.cs" Link="Services\NativeTextOverlayRenderService.cs" Condition="Exists('..\Services\NativeTextOverlayRenderService.cs')" />
+    <Compile Include="..\Services\WindowForegroundService.cs" Link="Services\WindowForegroundService.cs" Condition="Exists('..\Services\WindowForegroundService.cs')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.6" />
+  </ItemGroup>
+
+</Project>

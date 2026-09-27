@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <WindowsPackageType>None</WindowsPackageType>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <UseWinUI>true</UseWinUI>
+    <Nullable>enable</Nullable>
+    <Platforms>x64</Platforms>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+    <Version>2.0.0</Version>
+    <DefaultItemExcludes>$(DefaultItemExcludes);.git\**;.github\**;.backups\**;artifacts\**;publish\**;NetSpeedWidget.Hardware\**;NetSpeedWidget.Tests\**;.vs\**;.superpowers\**;docs\**;scripts\**;installer\**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="NetSpeedWidget.Tests\**\*.cs" />
+    <Compile Remove="NetSpeedWidget.Hardware\**\*.cs" />
+    <EmbeddedResource Include="$(HardwareHelperPath)" LogicalName="NetSpeedWidget.Hardware.zip" Condition="'$(HardwareHelperPath)' != ''" />
+    <EmbeddedResource Include="Assets\Dashboard.html" />
+    <None Remove="publish\**" />
+    <Content Remove="publish\**" />
+    <Content Remove=".git\**;.github\**;.backups\**;artifacts\**;NetSpeedWidget.Hardware\**;NetSpeedWidget.Tests\**;.vs\**;.superpowers\**;docs\**;scripts\**;installer\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.6" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250401001" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools.MSIX" Version="1.7.260610101" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="NetSpeedWidget app icon">
+  <defs>
+    <linearGradient id="backgroundGradient" x1="152" y1="112" x2="872" y2="912" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#172554"/>
+      <stop offset="0.44" stop-color="#0E7490"/>
+      <stop offset="1" stop-color="#14B8A6"/>
+    </linearGradient>
+    <radialGradient id="topGlow" cx="720" cy="214" r="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A7F3D0" stop-opacity="0.55"/>
+      <stop offset="0.42" stop-color="#22D3EE" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#22D3EE" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="lineGradient" x1="205" y1="512" x2="820" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="0.56" stop-color="#ECFEFF"/>
+      <stop offset="1" stop-color="#CCFBF1"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="24" stdDeviation="26" flood-color="#020617" flood-opacity="0.32"/>
+    </filter>
+    <filter id="lineShadow" x="-12%" y="-40%" width="124%" height="180%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#083344" flood-opacity="0.42"/>
+    </filter>
+  </defs>
+
+  <rect x="64" y="64" width="896" height="896" rx="220" fill="#020617" opacity="0.18" filter="url(#softShadow)"/>
+  <rect x="64" y="64" width="896" height="896" rx="220" fill="url(#backgroundGradient)"/>
+  <rect x="64" y="64" width="896" height="896" rx="220" fill="url(#topGlow)"/>
+  <path d="M188 520H314L386 406L474 650L568 330L654 520H836"
+        fill="none"
+        stroke="#0891B2"
+        stroke-width="88"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        opacity="0.38"
+        filter="url(#lineShadow)"/>
+  <path d="M188 520H314L386 406L474 650L568 330L654 520H836"
+        fill="none"
+        stroke="url(#lineGradient)"
+        stroke-width="56"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  <circle cx="568" cy="330" r="32" fill="#5EEAD4"/>
+  <circle cx="568" cy="330" r="54" fill="#5EEAD4" opacity="0.16"/>
+</svg>

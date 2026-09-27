@@ -1,0 +1,31 @@
+# 生成物、开发环境和本地记录
+**/bin/
+**/obj/
+/publish/
+/artifacts/
+/.backups/
+/.vs/
+/.superpowers/
+/.codex/
+/.agents/
+*.user
+*.suo
+*.pdb
+*.dmp
+*.log
+*.log.previous
+.env
+.env.*
+settings.json
+hardware-diagnostics*.txt
+package-verification*.json
+ui-smoke-verification.json
+dpi-smoke-verification.json
+/README.txt
+
+# 历史工作记录仅保留在本地；公开文档采用明确白名单
+/docs/*
+!/docs/DEVELOPMENT.md
+!/docs/RELEASE.md
+!/docs/接口文档-系统状态.md
+!/docs/openapi-系统状态.yaml
