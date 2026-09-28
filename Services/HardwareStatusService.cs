@@ -14,6 +14,12 @@ namespace NetSpeedWidget.Services
         private const string TemperatureSensorType = "Temperature";
         private const string LoadSensorType = "Load";
         private const string CpuCoreAverageTemperatureSensorName = "Core Average";
+        private static readonly string[] AmdCpuTemperatureNames =
+        {
+            "Core (Tdie)",
+            "Core (Tctl/Tdie)",
+            "Core (Tctl)"
+        };
 
         private static readonly string[] GpuUsageNamePriorities =
         {
@@ -273,17 +279,41 @@ namespace NetSpeedWidget.Services
 
         private static HardwareSensorReading? SelectCpuTemperatureReading(IReadOnlyCollection<HardwareSensorReading> readings)
         {
+            // 1. 保留 Core Average 优先级，且不把驱动未读到数据时的 0 °C 当作真实温度。
             foreach (var reading in readings)
             {
                 if (IsCpuCoreAverageTemperatureReading(reading) &&
                     reading.Value is not null &&
-                    IsValidTemperature(reading.Value.Value))
+                    IsValidCpuTemperature(reading.Value.Value))
                 {
                     return reading;
                 }
             }
 
+            // 2. AMD Ryzen 使用 Tdie/Tctl 命名；只在 CPU 硬件节点选取已知传感器。
+            foreach (var name in AmdCpuTemperatureNames)
+            {
+                foreach (var reading in readings)
+                {
+                    if (IsAmdCpuTemperatureReading(reading, name) &&
+                        reading.Value is not null &&
+                        IsValidCpuTemperature(reading.Value.Value))
+                    {
+                        return reading;
+                    }
+                }
+            }
+
             return null;
+        }
+
+        private static bool IsAmdCpuTemperatureReading(HardwareSensorReading reading, string name)
+        {
+            return string.Equals(reading.HardwareType, CpuHardwareType, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(reading.SensorType, TemperatureSensorType, StringComparison.OrdinalIgnoreCase) &&
+                (reading.HardwareName.StartsWith("AMD ", StringComparison.OrdinalIgnoreCase) ||
+                    reading.Identifier.StartsWith("/amdcpu/", StringComparison.OrdinalIgnoreCase)) &&
+                string.Equals(reading.Name, name, StringComparison.OrdinalIgnoreCase);
         }
 
         private static double? SelectGpuUsage(IReadOnlyCollection<HardwareSensorReading> readings)
@@ -397,6 +427,8 @@ namespace NetSpeedWidget.Services
                 value >= -50 &&
                 value <= 150;
         }
+
+        private static bool IsValidCpuTemperature(double value) => value > 0 && IsValidTemperature(value);
 
         private static bool IsValidPercent(double value)
         {

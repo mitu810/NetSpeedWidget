@@ -56,3 +56,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish.ps1
 ### v2.1.2 软件更新页面
 
 恢复第三项软件更新导航；版本、检查按钮与结果移入 UpdateSettingsPanel。页面没有更新内容或进度控件，SettingsWindow.Updates.cs 的弹窗流程不变。隔离验证先进入更新页面，记录 updatePageVisible、panelWidth 及按钮尺寸，分别检查无更新结果与新版本弹窗。
+
+### v2.1.3 AMD CPU 温度
+
+当前 Ryzen 5 5600GT 在 LibreHardwareMonitorLib 0.9.6 下提供 `Core (Tctl/Tdie)`，普通权限检测为 0 °C，独立管理员检测为 66.6 °C。设置显示“硬件采集已连接”，HTTP CPU 温度仍不可用；原因是旧筛选器只接受 `Core Average`。修复保留原优先级，仅在 AMD CPU 节点按 Tdie、Tctl/Tdie、Tctl 选择正数有效温度，零值仍显示不可用。不使用主板/SuperIO 或 CPU Package 冒充核心温度。测试覆盖 AMD、Intel、零值及来源隔离。管理员检测是独立只读探针，不等同于发布版运行验收。升级主 EXE 不会自动替换 Program Files 中的旧版采集程序；用户需在设置点击“授权/更新采集程序”确认 UAC。HardwareTaskService.Install 在重新注册任务后停掉旧实例，再启动新版；用户升级后需现场确认接口数值。

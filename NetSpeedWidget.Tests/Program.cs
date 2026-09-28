@@ -59,6 +59,8 @@ namespace NetSpeedWidget.Tests
             TestHardwareStatusServicePrefersPrimaryGpuTemperatureSensor();
             TestHardwareStatusServiceIgnoresMotherboardCpuTemperature();
             TestHardwareStatusServiceRequiresCoreAverageCpuTemperature();
+            TestHardwareStatusServiceSelectsAmdCpuTemperature();
+            TestHardwareStatusServiceRejectsZeroCpuTemperature();
             TestHardwareStatusServiceIgnoresInvalidSensorValues();
             TestHardwareStatusServiceCreatesDiagnosticsReport();
             TestHardwareStatusServiceReportsCoreAverageCpuSource();
@@ -747,6 +749,44 @@ namespace NetSpeedWidget.Tests
                     });
 
             AssertEqual(SystemMetricStatus.Unavailable.ToString(), snapshot.CpuTemperature.Status.ToString(), "cpu package is not used without core average");
+        }
+
+        private static void TestHardwareStatusServiceSelectsAmdCpuTemperature()
+        {
+            // 1. Ryzen 的 Tdie 优先于控制温度 Tctl，且忽略主板上的同名传感器。
+            var snapshot = HardwareStatusService.CreateSnapshot(new[]
+            {
+                new HardwareSensorReading("SuperIO", "Temperature", "Core (Tdie)", 99, "AMD Ryzen", "/lpc/temperature/0"),
+                new HardwareSensorReading("Cpu", "Temperature", "Core (Tctl)", 61.8, "AMD Ryzen 5 5600GT", "/amdcpu/0/temperature/0"),
+                new HardwareSensorReading("Cpu", "Temperature", "Core (Tctl/Tdie)", 57.2, "AMD Ryzen 5 5600GT", "/amdcpu/0/temperature/2"),
+                new HardwareSensorReading("Cpu", "Temperature", "Core (Tdie)", 54.3, "AMD Ryzen 5 5600GT", "/amdcpu/0/temperature/1")
+            });
+            AssertEqual("54.3 °C", snapshot.CpuTemperature.DisplayText, "AMD CPU prefers Tdie");
+
+            // 2. 这台机器只提供组合传感器，管理员读数有效时应直接显示。
+            var combined = HardwareStatusService.CreateSnapshot(new[]
+            {
+                new HardwareSensorReading("Cpu", "Temperature", "Core (Tctl/Tdie)", 66.625, "AMD Ryzen 5 5600GT with Radeon Graphics", "/amdcpu/0/temperature/2")
+            });
+            AssertEqual("66.6 °C", combined.CpuTemperature.DisplayText, "AMD combined temperature is used");
+        }
+
+        private static void TestHardwareStatusServiceRejectsZeroCpuTemperature()
+        {
+            // 1. 驱动读取失败时可能留下 0 °C；此时不能向用户报告虚假温度。
+            var zero = HardwareStatusService.CreateSnapshot(new[]
+            {
+                new HardwareSensorReading("Cpu", "Temperature", "Core (Tctl/Tdie)", 0, "AMD Ryzen 5 5600GT", "/amdcpu/0/temperature/2")
+            });
+            AssertEqual(SystemMetricStatus.Unavailable.ToString(), zero.CpuTemperature.Status.ToString(), "zero AMD temperature is unavailable");
+
+            // 2. Intel 的 Core Average 优先规则保留，零值时不降级为 Package。
+            var intel = HardwareStatusService.CreateSnapshot(new[]
+            {
+                new HardwareSensorReading("Cpu", "Temperature", "Core Average", 0, "Intel Core", "/intelcpu/0/temperature/1"),
+                new HardwareSensorReading("Cpu", "Temperature", "CPU Package", 62, "Intel Core", "/intelcpu/0/temperature/2")
+            });
+            AssertEqual(SystemMetricStatus.Unavailable.ToString(), intel.CpuTemperature.Status.ToString(), "zero Intel temperature is unavailable");
         }
 
         private static void TestHardwareStatusServiceIgnoresInvalidSensorValues()

@@ -99,6 +99,8 @@ public static class HardwareTaskService
             action.WorkingDirectory = target;
             action.Arguments = "--serve --pipe " + pipeName;
             dynamic task = service.GetFolder("\\").RegisterTaskDefinition(pipeName, definition, 6, userSid, null, 3, null);
+            // 4. 重新授权可能替换旧版采集程序；先停掉旧实例，再启动新路径。
+            task.Stop(0);
             task.Run(null);
         }
         finally { if (scheduler is not null) Marshal.FinalReleaseComObject(scheduler); }

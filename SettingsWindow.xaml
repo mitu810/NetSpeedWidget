@@ -434,10 +434,10 @@
                                     <Grid ColumnSpacing="16">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                         <TextBlock Text="硬件温度采集" Style="{StaticResource SettingLabelStyle}"/>
-                                        <Button x:Name="HardwareAuthorizeButton" Grid.Column="1" Content="授权硬件采集" Click="HardwareAuthorizeButton_Click"/>
+                                        <Button x:Name="HardwareAuthorizeButton" Grid.Column="1" Content="授权/更新采集程序" Click="HardwareAuthorizeButton_Click"/>
                                     </Grid>
                                     <TextBlock x:Name="HardwareStateText" FontSize="12" Opacity="0.7" TextWrapping="Wrap"
-                                               Text="首次授权需要管理员确认；未授权不影响网速。"/>
+                                               Text="首次授权或更新采集程序需要管理员确认；不影响网速。"/>
                                 </StackPanel>
                             </Border>
 

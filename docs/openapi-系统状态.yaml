@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: NetSpeedWidget 系统状态接口
   version: 2.0.0
-  description: NetSpeedWidget 系统状态局域网 HTTP 服务接口，服务优先使用 IPv4/IPv6 双栈监听，系统不支持双栈时自动回退 IPv4；IPv6 URL 需要使用 http://[IPv6地址]:端口/ 方括号格式。接口支持可选 Bearer Token 访问密码认证；CPU/GPU 温度通过 LibreHardwareMonitorLib 读取，其中 CPU 温度只接受 CPU 节点下的 Core Average，通常需要 Windows 管理员权限，主 EXE 使用普通权限，温度由首次单独授权的管理员辅助进程通过当前用户本机管道提供；GPU 占用率优先通过 Windows GPU Engine 性能计数器读取，失败时回退到硬件库 GPU 负载传感器。若设置中启用了访问密码但密码哈希为空，服务端会按未启用认证处理；硬件传感器或性能计数器不受支持时，对应指标返回 Unavailable。JSON 为严格 UTF-8，请求头最大 16 KB、正文最大 64 KB、处理截止时间 10 秒、活动连接最多 16 个，超额连接或超时关闭；解析错误返回 400/413/431 和 invalidRequest，适用于所有路由。
+  description: NetSpeedWidget 系统状态局域网 HTTP 服务接口，服务优先使用 IPv4/IPv6 双栈监听，系统不支持双栈时自动回退 IPv4；IPv6 URL 需要使用 http://[IPv6地址]:端口/ 方括号格式。接口支持可选 Bearer Token 访问密码认证；CPU/GPU 温度通过 LibreHardwareMonitorLib 读取，其中 CPU 温度优先使用 CPU 节点下的 Core Average，AMD CPU 可使用有效的 Tdie/Tctl 传感器，0 °C 视为无效读数，通常需要 Windows 管理员权限，主 EXE 使用普通权限，温度由首次单独授权的管理员辅助进程通过当前用户本机管道提供；GPU 占用率优先通过 Windows GPU Engine 性能计数器读取，失败时回退到硬件库 GPU 负载传感器。若设置中启用了访问密码但密码哈希为空，服务端会按未启用认证处理；硬件传感器或性能计数器不受支持时，对应指标返回 Unavailable。JSON 为严格 UTF-8，请求头最大 16 KB、正文最大 64 KB、处理截止时间 10 秒、活动连接最多 16 个，超额连接或超时关闭；解析错误返回 400/413/431 和 invalidRequest，适用于所有路由。
 servers:
   - url: http://localhost:17890
     description: 本机默认地址
@@ -68,7 +68,7 @@ paths:
   /api/status:
     get:
       summary: 获取系统状态
-      description: 获取当前网速、CPU、GPU、内存等系统状态快照，串行采集并缓存 1 秒。CPU/GPU 温度来自 LibreHardwareMonitorLib；CPU 温度只读取 CPU 节点下的 Core Average，没有该传感器或数值无效时返回 Unavailable，通常需要 Windows 管理员权限；GPU 占用率优先来自 Windows GPU Engine 性能计数器，失败时回退到 LibreHardwareMonitorLib GPU 负载传感器。硬件、驱动或权限环境不支持时返回 Unavailable。启用访问密码后需要 Bearer token。
+      description: 获取当前网速、CPU、GPU、内存等系统状态快照，串行采集并缓存 1 秒。CPU/GPU 温度来自 LibreHardwareMonitorLib；CPU 温度优先读取 CPU 节点下的 Core Average，AMD CPU 可回退到有效的 Tdie/Tctl 传感器；0 °C 或没有有效读数时返回 Unavailable，通常需要 Windows 管理员权限；GPU 占用率优先来自 Windows GPU Engine 性能计数器，失败时回退到 LibreHardwareMonitorLib GPU 负载传感器。硬件、驱动或权限环境不支持时返回 Unavailable。启用访问密码后需要 Bearer token。
       operationId: getSystemStatus
       security:
         - bearerAuth: []
