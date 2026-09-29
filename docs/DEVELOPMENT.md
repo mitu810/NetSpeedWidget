@@ -60,3 +60,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish.ps1
 ### v2.1.3 AMD CPU 温度
 
 当前 Ryzen 5 5600GT 在 LibreHardwareMonitorLib 0.9.6 下提供 `Core (Tctl/Tdie)`，普通权限检测为 0 °C，独立管理员检测为 66.6 °C。设置显示“硬件采集已连接”，HTTP CPU 温度仍不可用；原因是旧筛选器只接受 `Core Average`。修复保留原优先级，仅在 AMD CPU 节点按 Tdie、Tctl/Tdie、Tctl 选择正数有效温度，零值仍显示不可用。不使用主板/SuperIO 或 CPU Package 冒充核心温度。测试覆盖 AMD、Intel、零值及来源隔离。管理员检测是独立只读探针，不等同于发布版运行验收。升级主 EXE 不会自动替换 Program Files 中的旧版采集程序；用户需在设置点击“授权/更新采集程序”确认 UAC。HardwareTaskService.Install 在重新注册任务后停掉旧实例，再启动新版；用户升级后需现场确认接口数值。
+
+### v2.1.4 设置窗口首次显示
+
+用户报告偶发首次打开设置窗口时约 5 秒黑屏，只看得到右上角原生窗口按钮；关闭后再打开正常。隔离 `--smoke-dpi` 的设置窗口 XAML 初始化到 `Loaded` 约 0.3 秒，不能复现现场症状。构造期间 `RefreshSystemStatusServerState` 原本同步读取服务状态，运行中的服务会枚举网卡；这是可阻塞 UI 的代码路径，但尚无证据证明它就是现场的 5 秒根因。
+
+状态查询现在通过后台任务执行，使用刷新序号防止旧结果覆盖新设置，并在窗口关闭后停止写回；系统状态页的服务文字可短暂显示“正在读取…”。这符合[微软 WinUI 启动性能建议](https://learn.microsoft.com/en-us/windows/apps/develop/performance/app-startup-performance)中将非首帧必需的慢操作延后执行的做法。设置窗口将 `xaml-initialized`、`window-configured`、`settings-loaded`、`constructor-complete`、`root-loaded`、`first-render` 耗时写入实际 EXE 目录 `app.log`。`first-render` 是 WinUI 渲染事件，不等于屏幕像素已呈现。隔离 `--smoke-dpi --simulate-slow-server-state` 将查询人为延迟 5 秒，验证 `first-render` 仍在约 0.23 秒发生；该模式使用独立实例和默认设置，不能替代重启后真实安装版验收。若升级后仍黑屏，对比同一次打开的各阶段耗时，定位是 XAML 初始化、设置加载，还是布局/渲染阶段；保留当前用户实例，避免强行关闭。

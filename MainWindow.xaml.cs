@@ -465,12 +465,15 @@ namespace NetSpeedWidget
                     return;
                 }
 
+                Func<SystemStatusHttpServerState> readServerState = _systemStatusHttpServerService.GetState;
+                if (_isDpiSmokeTest && Array.IndexOf(Environment.GetCommandLineArgs(), "--simulate-slow-server-state") >= 0)
+                    readServerState = () => { Thread.Sleep(5000); return _systemStatusHttpServerService.GetState(); };
                 _settingsWindow =
                     new SettingsWindow(
                         _settingsService,
                         _settings,
                         ApplySettingsFromWindow,
-                        _systemStatusHttpServerService.GetState,
+                        readServerState,
                         _hardwareSamplingService,
                         ExitApplication);
 

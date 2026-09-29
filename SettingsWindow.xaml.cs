@@ -8,6 +8,9 @@ using Microsoft.UI.Text;
 using NetSpeedWidget.Models;
 using NetSpeedWidget.Services;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Windows.System;
 using Windows.Graphics;
 
@@ -34,6 +37,12 @@ namespace NetSpeedWidget
         private bool _isLoading;
         private AppSettings _settings;
         private AppSettings _lastSavedSettings;
+        private readonly long _creationTick = Stopwatch.GetTimestamp();
+        private readonly List<string> _openingStages = [];
+        private int _serverStateRefreshGeneration;
+        private bool _isClosed;
+        private bool _firstFrameLogged;
+        private bool _firstFrameSubscribed;
         private SettingsPage _currentSettingsPage = SettingsPage.NetSpeed;
 
         private enum SettingsPage
@@ -52,6 +61,7 @@ namespace NetSpeedWidget
             Action? exitForUpdate = null)
         {
             InitializeComponent();
+            LogFirstOpenStage("xaml-initialized");
             InitializeUpdates(exitForUpdate);
             _hardwareSamplingService = hardwareSamplingService;
             _hardwareStateTimer.Tick += (_, _) => HardwareStateText.Text = _hardwareSamplingService?.State ?? "采集程序未连接";
@@ -66,8 +76,15 @@ namespace NetSpeedWidget
                 getSystemStatusHttpServerState ?? (() => SystemStatusHttpServerState.Stopped());
 
             ConfigureWindow();
+            LogFirstOpenStage("window-configured");
             SettingsRoot.Loaded += (_, _) =>
             {
+                LogFirstOpenStage("root-loaded");
+                if (!_firstFrameLogged && !_firstFrameSubscribed)
+                {
+                    CompositionTarget.Rendering += SettingsFirstFrame_Rendering;
+                    _firstFrameSubscribed = true;
+                }
                 _sizingRoot = SettingsRoot.XamlRoot;
                 if (_sizingRoot is null) return;
                 _sizingRoot.Changed += SettingsXamlRoot_Changed;
@@ -75,9 +92,14 @@ namespace NetSpeedWidget
             };
             Closed += (_, _) =>
             {
+                _isClosed = true;
+                _serverStateRefreshGeneration++;
+                CompositionTarget.Rendering -= SettingsFirstFrame_Rendering;
+                _firstFrameSubscribed = false;
                 if (_sizingRoot is not null) _sizingRoot.Changed -= SettingsXamlRoot_Changed;
             };
             LoadSettings();
+            LogFirstOpenStage("settings-loaded");
             ApplyTheme(_settings.Theme);
             RefreshSystemStatusServerState();
 
@@ -104,6 +126,28 @@ namespace NetSpeedWidget
             MemoryUsageCardToggle.Toggled += SystemStatusCardToggle_Toggled;
 
             ShowSettingsPage(SettingsPage.NetSpeed);
+            LogFirstOpenStage("constructor-complete");
+        }
+
+        private void LogFirstOpenStage(string stage)
+        {
+            // 仅在内存中计时；首帧事件后由后台线程写入一条日志，避免磁盘 I/O 拖慢界面。
+            _openingStages.Add($"{stage}={Stopwatch.GetElapsedTime(_creationTick).TotalMilliseconds:F0}ms");
+            if (stage == "first-render")
+            {
+                var timeline = string.Join("; ", _openingStages);
+                _ = Task.Run(() => AppLogService.Write("Settings open timeline: " + timeline));
+            }
+        }
+
+        /// <summary>记录首次 XAML 布局进入渲染的时间，用于定位偶发的设置窗口黑屏。</summary>
+        private void SettingsFirstFrame_Rendering(object? sender, object args)
+        {
+            if (_firstFrameLogged || SettingsRoot.ActualWidth <= 0 || SettingsRoot.ActualHeight <= 0) return;
+            _firstFrameLogged = true;
+            CompositionTarget.Rendering -= SettingsFirstFrame_Rendering;
+            _firstFrameSubscribed = false;
+            LogFirstOpenStage("first-render");
         }
 
         private void ConfigureWindow()
@@ -607,7 +651,38 @@ namespace NetSpeedWidget
 
         private void RefreshSystemStatusServerState()
         {
-            var state = _getSystemStatusHttpServerState();
+            // 1. 运行时状态可能枚举网络适配器，后台读取以免阻塞设置窗口首帧。
+            var generation = ++_serverStateRefreshGeneration;
+            if (_settings.SystemStatus.Enabled && _settings.SystemStatus.ServerEnabled)
+                SystemStatusServiceStatusText.Text = "正在读取…";
+            _ = RefreshSystemStatusServerStateAsync(generation);
+        }
+
+        /// <summary>后台获取服务状态，只允许最新一次结果更新仍打开的设置窗口。</summary>
+        private async Task RefreshSystemStatusServerStateAsync(int generation)
+        {
+            SystemStatusHttpServerState state;
+            try
+            {
+                state = await Task.Run(_getSystemStatusHttpServerState);
+            }
+            catch (Exception error)
+            {
+                AppLogService.Write("Failed to read system status server state.", error);
+                return;
+            }
+
+            // 2. 回到 UI 线程；关闭窗口或再次刷新后丢弃过期结果。
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_isClosed || generation != _serverStateRefreshGeneration) return;
+                ApplySystemStatusServerState(state);
+            });
+        }
+
+        /// <summary>根据最新设置和服务快照刷新系统状态页面的文字。</summary>
+        private void ApplySystemStatusServerState(SystemStatusHttpServerState state)
+        {
             var serverRequested =
                 _settings.SystemStatus.Enabled &&
                 _settings.SystemStatus.ServerEnabled;
